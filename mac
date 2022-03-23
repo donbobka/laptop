@@ -81,14 +81,6 @@ case "$SHELL" in
     ;;
 esac
 
-gem_install_or_update() {
-  if gem list "$1" --installed > /dev/null; then
-    gem update "$@"
-  else
-    gem install "$@"
-  fi
-}
-
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew ..."
     /bin/bash -c \
@@ -100,6 +92,9 @@ if ! command -v brew >/dev/null; then
     append_to_zshrc 'export PATH="/usr/local/bin:$PATH"' 1
 
     export PATH="/usr/local/bin:$PATH"
+
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/vlyzo/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
 if brew list | grep -Fq brew-cask; then
@@ -109,54 +104,7 @@ fi
 
 fancy_echo "Updating Homebrew formulae ..."
 brew update --force # https://github.com/Homebrew/brew/issues/1151
-brew bundle --file=- <<EOF
-tap "thoughtbot/formulae"
-tap "homebrew/services"
-tap "universal-ctags/universal-ctags"
-tap "heroku/brew"
-
-# Unix
-brew "universal-ctags", args: ["HEAD"]
-brew "git"
-brew "openssl"
-brew "rcm"
-brew "reattach-to-user-namespace"
-brew "the_silver_searcher"
-brew "tmux"
-brew "vim"
-brew "watchman"
-brew "zsh"
-
-# Heroku
-brew "heroku/brew/heroku"
-brew "parity"
-
-# GitHub
-brew "gh"
-
-# Image manipulation
-brew "imagemagick"
-
-# Programming language prerequisites and package managers
-brew "libyaml" # should come after openssl
-brew "coreutils"
-brew "yarn"
-cask "gpg-suite"
-
-# Databases
-brew "postgres", restart_service: :changed
-brew "redis", restart_service: :changed
-EOF
-
-fancy_echo "Update heroku binary ..."
-brew unlink heroku
-brew link --force heroku
-
-fancy_echo "Configuring asdf version manager ..."
-if [ ! -d "$HOME/.asdf" ]; then
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0
-  append_to_zshrc "source $HOME/.asdf/asdf.sh" 1
-fi
+brew bundle --file=Brewfile
 
 alias install_asdf_plugin=add_or_update_asdf_plugin
 add_or_update_asdf_plugin() {
@@ -171,7 +119,8 @@ add_or_update_asdf_plugin() {
 }
 
 # shellcheck disable=SC1090
-source "$HOME/.asdf/asdf.sh"
+append_to_zshrc ". /opt/homebrew/opt/asdf/libexec/asdf.sh"
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
 add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
 add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
 
@@ -193,7 +142,6 @@ number_of_cores=$(sysctl -n hw.ncpu)
 bundle config --global jobs $((number_of_cores - 1))
 
 fancy_echo "Installing latest Node ..."
-bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
 install_asdf_language "nodejs"
 
 if [ -f "$HOME/.laptop.local" ]; then
