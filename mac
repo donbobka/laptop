@@ -43,6 +43,16 @@ if [ ! -f "$HOME/.zshrc" ]; then
   touch "$HOME/.zshrc"
 fi
 
+# Git config
+if [ -z "$(git config --get user.name)" ]; then
+# Initial configuration of git
+  echo "Your Name: " && read NAME
+  git config --global user.name $NAME
+  echo "Your email: " && read EMAIL
+  git config --global user.email $NAME
+  git config --global pull.rebase true
+fi
+
 # shellcheck disable=SC2016
 append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
 
@@ -149,3 +159,10 @@ if [ -f "$HOME/.laptop.local" ]; then
   # shellcheck disable=SC1090
   . "$HOME/.laptop.local"
 fi
+
+fancy_echo "Installing vscode extensions"
+cat vscode-extensions | xargs -n 1 -I{} code --install-extension {}
+
+fancy_echo "Setup dock"
+defaults write com.apple.dock "autohide" -bool "true"
+killall Dock

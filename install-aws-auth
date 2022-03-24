@@ -1,0 +1,5 @@
+AWS_AUTH_BASH_PATH=~/projects/aws-auth-bash
+
+git clone git@github.com:SEEK-Jobs/aws-auth-bash.git ${AWS_AUTH_BASH_PATH}
+
+append_to_zshrc("function awsauth { $AWS_AUTH_BASH_PATH/auth.sh "$@"; [[ -r "$HOME/.aws/sessiontoken" ]] && . "$HOME/.aws/sessiontoken"; }")
