@@ -15,6 +15,7 @@ cask 'vlc'
 
 brew 'git'
 brew 'asdf'
+brew 'htop'
 
 ## Already preinstalled
 # cask 'google-chrome'
