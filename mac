@@ -165,4 +165,8 @@ cat vscode-extensions | xargs -n 1 -I{} code --install-extension {}
 
 fancy_echo "Setup dock"
 defaults write com.apple.dock "autohide" -bool "true"
+dockutil --remove all --no-restart
+cat ./dock | xargs -I{} dockutil --no-restart --add "{}" 
+dockutil --add '~/Downloads' --view grid --display folder --no-restart 
+
 killall Dock
